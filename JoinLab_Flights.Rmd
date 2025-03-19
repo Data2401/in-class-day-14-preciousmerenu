@@ -1,6 +1,6 @@
 ---
 title: "Join Lab"
-author: "Dr. Shoemaker"
+author: "Precious Merenu"
 date: "DATA 2401"
 output: html_document
 ---
@@ -17,6 +17,8 @@ library(nycflights13)
 my_flights <- flights # store my own version
 my_flights <- na.omit(my_flights) ## this dataset has data on cancelled flights too, 
                                   ## so we 'll remove those for now
+my_flights %>% head()
+head(my_flights)
 
 ```
 
@@ -24,13 +26,15 @@ my_flights <- na.omit(my_flights) ## this dataset has data on cancelled flights 
 Create a dataframe of the average arrival delays for each _destination_
 
 ```{r}
-
+ave_delays <-  my_flights %>% group_by(dest) 
+ave_delays
 ```
 
 Then use `left_join()` to join on the "airports" dataframe, which has the airport information.
 
 ```{r}
-
+airports
+left_join(airports, ave_delays, join_by(faa == dest))
 ```
 
 
@@ -39,6 +43,10 @@ Note here: the column names don't match anymore!
 Which airport had the largest average arrival delay?
 
 ```{r}
+largest_ave_delay <- ave_delays %>%
+  summarize(max_arr_delay = max(arr_delay)) %>% slice(1)
+
+largest_ave_delay
 
 ```
 
@@ -50,15 +58,23 @@ What is the average departure delay for each airline? To answer this with someth
 ```{r}
 
 
-````
+mean_delay <- ave_delays %>% group_by(carrier) %>%
+  summarize(mean_dep_delay = mean(dep_delay)) 
+  
+mean_delay <- left_join(mean_delay, airlines, (by = "carrier"))
+mean_delay
+                        
+```
 
 Which airline had the smallest average departure delay? 
-
+mean(dep_delay)
 
 
 ```{r}
+smallest_ave_delay <- ave_delays %>%
+  summarize(max_arr_delay = mean(dep_delay)) %>% slice(1)
 
-
+smallest_ave_delay
 
 ```
 
@@ -87,3 +103,11 @@ flights %>%
 
 What does anti_join(flights, airports, by = c("dest" = "faa")) tell you? What does anti_join(airports, flights, by = c("faa" = "dest")) tell you?
 Perform the two joins below and consider what the results are. 
+```{r}
+anti_join(flights, airports, by = c("dest" = "faa"))
+#Gives me more information about the flights. 
+
+anti_join(airports, flights, by = c("faa" = "dest"))
+#Gives me more information about the airports. 
+
+```
